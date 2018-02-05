@@ -13,7 +13,6 @@ class Context {
   public:
     Context() { current_symtab = &global_symtab; }
 
-    bool in_global_scope = true;
     SymbolTable global_symtab;
     SymbolTable *current_symtab;
 };

@@ -6,13 +6,15 @@
 #include "context.h"
 #include "error.h"
 
+#include <cmath>
+
 namespace gss {
 
 double Expression::eval(Context *c) const {
     double v = 0;
     switch (type) {
     case ExpressionType::UOP_ABS:
-        v = abs(left->eval(c));
+        v = fabs(left->eval(c));
         break;
     case ExpressionType::UOP_MINUS:
         v = -(left->eval(c));
@@ -58,7 +60,7 @@ double Expression::eval(Context *c) const {
 }
 
 double FunctionCall::eval(Context *c) const {
-    auto res = c->current_symtab->lookup(func_name);
+    auto res = c->global_symtab.lookup(func_name);
     if (!res) {
         runtime_error("undefined symbol: ", func_name);
     } else if ((*res)->type == SymbolType::VAR) {
@@ -68,6 +70,7 @@ double FunctionCall::eval(Context *c) const {
     } else {
     }
 
+	SymbolTable* save = c->current_symtab;
     c->current_symtab = (*res)->fsymtab;
 
     auto piter = (*res)->parameters.cbegin(), pend = (*res)->parameters.cend();
@@ -81,7 +84,7 @@ double FunctionCall::eval(Context *c) const {
         v = (*iter)->eval(c);
     }
 
-    c->current_symtab = &(c->global_symtab);
+    c->current_symtab = save;
 
     return v;
 }
