@@ -68,6 +68,8 @@ double FunctionCall::eval(Context *c) const {
     } else {
     }
 
+    c->current_symtab = (*res)->fsymtab;
+
     auto piter = (*res)->parameters.cbegin(), pend = (*res)->parameters.cend();
     auto aiter = args.cbegin(), aend = args.cend();
     for (; aiter != aend && piter != pend; ++aiter, ++piter) {
@@ -78,6 +80,8 @@ double FunctionCall::eval(Context *c) const {
     for (auto iter = (*res)->fbody.cbegin(), end = (*res)->fbody.cend(); iter != end; ++iter) {
         v = (*iter)->eval(c);
     }
+
+    c->current_symtab = &(c->global_symtab);
 
     return v;
 }
@@ -106,7 +110,7 @@ double ControlFlow::eval(Context *c) const {
         }
         break;
     case ControlFlowType::WHILE_DO:
-        while (condition->eval(c)) { 
+        while (condition->eval(c)) {
             for (auto iter = then_or_do_list.cbegin(), end = then_or_do_list.cend(); iter != end;
                  ++iter) {
                 v = (*iter)->eval(c);

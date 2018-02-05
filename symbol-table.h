@@ -9,7 +9,7 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
-#include <vector>
+#include <list>
 
 namespace gss {
 enum class SymbolType : int { VAR, FUNC };
@@ -17,36 +17,42 @@ enum class SymbolType : int { VAR, FUNC };
 class ASTNode;
 class SymbolTable;
 
+using ParameterList = std::list<std::string>;
+using ASTNodePtrList = std::list<std::shared_ptr<ASTNode>>;
+
 struct SymbolValue {
   public:
     SymbolValue() = default;
     SymbolValue(SymbolType st, double v) : type(st), value(v) {}
-    SymbolValue(SymbolType st, const std::vector<std::string> &params, SymbolTable *stab,
-                const std::vector<std::shared_ptr<ASTNode>> &body)
+    SymbolValue(SymbolType st, const ParameterList &params, SymbolTable *stab, const ASTNodePtrList &body)
         : type(st), parameters(params), fsymtab(stab), fbody(body) {}
     ~SymbolValue();
 
   public:
     SymbolType type;
     double value;
-    std::vector<std::string> parameters;
+    ParameterList parameters;
     SymbolTable *fsymtab = nullptr;
-    std::vector<std::shared_ptr<ASTNode>> fbody;
+    ASTNodePtrList fbody;
 };
+
+using SymbolValuePtr = std::shared_ptr<SymbolValue>;
 
 class SymbolTable {
   public:
     void variable_define(const std::string &name, double value);
 
-    void function_define(const std::string &name, const std::vector<std::string> &params,
-                         SymbolTable *stab, const std::vector<std::shared_ptr<ASTNode>> &body);
+    void function_define(const std::string &name, const ParameterList &params, 
+    					 SymbolTable *stab, const ASTNodePtrList &body);
 
     void symbol_delete(const std::string &name);
 
-    std::optional<std::shared_ptr<SymbolValue>> lookup(const std::string &name) const;
+	void symbol_table_print() const;
+
+    std::optional<SymbolValuePtr> lookup(const std::string &name) const;
 
   private:
-    std::unordered_map<std::string, std::shared_ptr<SymbolValue>> symtab_;
+    std::unordered_map<std::string, SymbolValuePtr> symtab_;
 };
 
 } // namespace gss

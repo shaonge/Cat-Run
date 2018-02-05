@@ -7,7 +7,7 @@
 
 %code requires {
    #include <memory>
-   #include <vector>
+   #include <list>
 
    namespace gss {
       class ASTNode;
@@ -33,8 +33,6 @@
    #include "ast.h"
    #include "context.h"
    #include "scanner.h"
-   
-   #include <list>
 
 #undef yylex
 #define yylex scanner.yylex
@@ -49,8 +47,8 @@
 %token EOL END
 
 %type <std::shared_ptr<ASTNode>> stmt expr
-%type <std::vector<std::string>> identifier_list
-%type <std::vector<std::shared_ptr<ASTNode>>> stmt_list expr_list
+%type <std::list<std::string>> identifier_list
+%type <std::list<std::shared_ptr<ASTNode>>> stmt_list expr_list
 
 %locations
 
@@ -63,15 +61,13 @@
 %%
 
 calclist:
-    | calclist stmt EOL                                 { double result = $2->eval(&context); printf("= %4.4g\n> ", result); }
+    | calclist stmt EOL                                 { double result = $2->eval(&context); context.current_symtab->symbol_table_print(); printf("= %4.4g\n> ", result); }
     | calclist DEF IDENTIFIER '(' identifier_list ')'   {
                                                            context.in_global_scope = false;
                                                            SymbolTable* fstab = new SymbolTable();
-                                                           context.current_symtab->function_define($3, $5, fstab, std::vector<std::shared_ptr<ASTNode>>());
-                										   context.current_symtab = fstab;
+                                                           context.current_symtab->function_define($3, $5, fstab, ASTNodePtrList());
                                                         }
       ':' stmt_list                                     {
-                                                            context.current_symtab = &context.global_symtab;
                                                             if (!context.in_global_scope) {
                                                                 auto f = context.current_symtab->lookup($3);
                                                                 (*f)->fbody = $9;
@@ -79,7 +75,6 @@ calclist:
                                                             context.in_global_scope = true;
                                                         }
       EOL                                               { printf("Defined %s\n> ", $3.c_str()); }
-    | END                                               { return 0; }
     | calclist error EOL
     ;
 
@@ -90,7 +85,7 @@ stmt: IF expr THEN stmt_list                  { $$ = std::make_shared<ControlFlo
     ;
 
 stmt_list:                 { $$.clear(); }
-    | stmt ';' stmt_list   { $$ = std::move($3); $$.insert($$.cbegin(), $1); }
+    | stmt ';' stmt_list   { $$ = std::move($3); $$.push_front($1); }
     ;
 
 expr: expr '+' expr                  { $$ = std::make_shared<Expression>(ExpressionType::BOP_ADD, $1, $3); }
@@ -124,12 +119,12 @@ expr: expr '+' expr                  { $$ = std::make_shared<Expression>(Express
     | IDENTIFIER '(' expr_list ')'   { $$ = std::make_shared<FunctionCall>($1, $3); }
     ;
 
-expr_list: expr                 { $$.clear(); $$.push_back($1); }
-         | expr_list ',' expr   { $$ = std::move($1); $$.push_back($3); }
+expr_list: expr                 { $$.clear(); $$.push_front($1); }
+         | expr ',' expr_list   { $$ = std::move($3); $$.push_front($1); }
          ;
 
-identifier_list: IDENTIFIER                       { $$.clear(); $$.push_back($1); }
-               | identifier_list ',' IDENTIFIER   { $$ = std::move($1); $$.push_back($3); }
+identifier_list: IDENTIFIER                       { $$.clear(); $$.push_front($1); }
+               | IDENTIFIER ',' identifier_list   { $$ = std::move($3); $$.push_front($1); }
                ;
 
 %%

@@ -6,7 +6,7 @@
 #define PROGRAMMABLECALCULATOR_AST_H
 
 #include <memory>
-#include <vector>
+#include <list>
 
 namespace gss {
 
@@ -38,7 +38,7 @@ class ASTNode {
 };
 
 using ASTNodePtr = std::shared_ptr<ASTNode>;
-using ASTNodePtrList = std::vector<ASTNodePtr>;
+using ASTNodePtrList = std::list<ASTNodePtr>;
 
 class Expression : public ASTNode {
   public:
