@@ -12,8 +12,6 @@ int main(int argc, char *argv[]) {
         ssg::Driver driver;
         driver.parse(argv[1]);
     } else {
-        std::cout << "usage: pc [file]\n"
-                  << "\tpc:        a command line calculator\n"
-                  << "\tpc file:   interpret and run this file\n";
+        std::cout << "usage:\n" << "\tic file: interpret and run this file\n";
     }
 }
