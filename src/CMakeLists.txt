@@ -6,8 +6,8 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 
-BISON_TARGET(parser pc-from-file.yy ${PROJECT_BINARY_DIR}/parser.tab.cc)
-FLEX_TARGET(scanner pc-from-file.l ${PROJECT_BINARY_DIR}/scanner.yy.cc)
+BISON_TARGET(parser parser.yy ${PROJECT_BINARY_DIR}/parser.tab.cc)
+FLEX_TARGET(scanner scanner.l ${PROJECT_BINARY_DIR}/scanner.yy.cc)
 ADD_FLEX_BISON_DEPENDENCY(scanner parser)
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} SOURCE_FILES)

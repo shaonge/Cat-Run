@@ -12,6 +12,6 @@ int main(int argc, char *argv[]) {
         ssg::Driver driver;
         driver.parse(argv[1]);
     } else {
-        std::cout << "usage:\n" << "\tic file: interpret and run this file\n";
+        std::cout << "usage:\n" << "   ic file: interpret and run this file\n";
     }
 }
